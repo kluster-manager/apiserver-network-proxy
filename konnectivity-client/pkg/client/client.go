@@ -28,6 +28,8 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"k8s.io/klog/v2"
 
 	"sigs.k8s.io/apiserver-network-proxy/konnectivity-client/pkg/client/metrics"
@@ -256,8 +258,9 @@ func (t *grpcTunnel) serve(tunnelCtx context.Context) {
 			return
 		}
 		isClosing := t.isClosing()
+
 		if err != nil || pkt == nil {
-			if !isClosing {
+			if !isClosing && status.Code(err) != codes.Canceled {
 				klog.ErrorS(err, "stream read failure")
 			}
 			return
